@@ -62,6 +62,25 @@ if ! grep -Fxq "Paths=/data/addons/System/*.u" /data/config/UT2004.ini; then
     sed -i '/\[Core.System\]/a Paths=/data/addons/System/*.u' /data/config/UT2004.ini
 fi
 
+# Disable Epic master server uplink (Epic shut it down years ago)
+if ! grep -q "^\[IpDrv.MasterServerUplink\]" /data/config/UT2004.ini; then
+    echo "" >> /data/config/UT2004.ini
+    echo "[IpDrv.MasterServerUplink]" >> /data/config/UT2004.ini
+    echo "DoUplink=False" >> /data/config/UT2004.ini
+    echo "UplinkToGamespy=False" >> /data/config/UT2004.ini
+else
+    # Replace values if they exist
+    sed -i '/^\[IpDrv.MasterServerUplink\]/,/^\[/ s/^DoUplink=.*/DoUplink=False/' /data/config/UT2004.ini
+    sed -i '/^\[IpDrv.MasterServerUplink\]/,/^\[/ s/^UplinkToGamespy=.*/UplinkToGamespy=False/' /data/config/UT2004.ini
+
+    # Add them if missing
+    grep -q "DoUplink=" /data/config/UT2004.ini || \
+        sed -i '/^\[IpDrv.MasterServerUplink\]/a DoUplink=False' /data/config/UT2004.ini
+
+    grep -q "UplinkToGamespy=" /data/config/UT2004.ini || \
+        sed -i '/^\[IpDrv.MasterServerUplink\]/a UplinkToGamespy=False' /data/config/UT2004.ini
+fi
+
 # If $SERVER_NAME is defined, set server name to this value
 if [ -n "${SERVER_NAME:-}" ]; then
     sed -i "/\[Engine.GameReplicationInfo\]/,/^$/s/^ServerName=.*/ServerName=${SERVER_NAME}/" /data/config/UT2004.ini
