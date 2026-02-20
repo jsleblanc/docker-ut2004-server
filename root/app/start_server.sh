@@ -62,6 +62,17 @@ if ! grep -Fxq "Paths=/data/addons/System/*.u" /data/config/UT2004.ini; then
     sed -i '/\[Core.System\]/a Paths=/data/addons/System/*.u' /data/config/UT2004.ini
 fi
 
+# If $SERVER_NAME is defined, set server name to this value
+if [ -n "${SERVER_NAME:-}" ]; then
+    sed -i "/\[Engine.GameReplicationInfo\]/,/^$/s/^ServerName=.*/ServerName=${SERVER_NAME}/" /data/config/UT2004.ini
+fi
+
+# If $ENABLE_WEB_INTERFACE are ADMIN_PASSWORD are defined, enable web interface in config
+if [ "$ENABLE_WEB_INTERFACE" = "1" ] && [ -n "${ADMIN_PASSWORD:-}" ]; then
+    sed -i '/\[UWeb.WebServer\]/,/^$/s/bEnabled=False/bEnabled=True/' /data/config/UT2004.ini
+    sed -i "/\[Engine.AccessControl\]/,/^$/s/^AdminPassword=.*/AdminPassword=${ADMIN_PASSWORD}/" /data/config/UT2004.ini
+fi
+
 # If $CD_KEY is defined, update the server key
 if [ -n "${CD_KEY:-}" ]; then
     echo \"CDKey\"=\""${CD_KEY}"\" >/data/config/cdkey
